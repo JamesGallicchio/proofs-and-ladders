@@ -273,7 +273,24 @@ object Junction {
 
 object Truth {
   import Axioms._
+  import Implication._
+  import Negation._
+  import Equivalence._
+  import Junction._
 
   trait T extends WFF
   trait F extends WFF
+
+  object DfT extends Axiom {
+    def apply[P <: WFF]()
+    : |-[T <-> (P <-> P)]
+    = ax()
+  }
+
+  object DfF extends Axiom {
+    def apply[P <: WFF]()
+    : |-[F <-> ~[T]]
+    = ax()
+  }
+
 }
