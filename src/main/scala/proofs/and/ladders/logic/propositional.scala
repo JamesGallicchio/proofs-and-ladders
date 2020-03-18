@@ -131,7 +131,14 @@ object Negation {
 
   def NotNot [P <: WFF]
   : |-[ ~[~[P]] -> P ]
-  = ???
+  = {
+    val _1: |-[ ~[~[P]] -> ((P -> P) -> P) ] = {
+      val _1a: |-[ ~[~[P]] -> (~[P] -> ~[P -> P]) ] = FalsePrem[~[P], ~[P -> P]]
+      val _2a: |-[ (~[P] -> ~[P -> P]) -> ((P -> P) -> P) ] = Trans()
+      MPDedMin(_1a, _2a)
+    }
+    MPDedMaj(Identity[P], _1)
+  }
 
   def NotNotRev[P <: WFF]
   : |-[ P -> ~[~[P]] ]
@@ -143,13 +150,22 @@ object Negation {
   def TransRev [P <: WFF, Q <: WFF]
   : |-[ (P -> Q) -> (~[Q] -> ~[P]) ]
   = {
-    val _1: |-[ (P -> Q) -> (P -> Q)  ] = Identity
-    val _2: |-[ P -> ~[~[P]] ] = NotNotRev
-    //val _3: |-[_] = ???
-    //val _2: |-[ ~[~[P]] -> Q ] = MPDed2(NotNot, _1)
-    //val _2: |-[ ~[~[P]] -> ~[~[Q]] ] = MPDed2(_1, NotNotRev)
-    //TransInf(_2)
-    ???
+    val _1: |-[ (P -> Q) -> (~[~[P]] -> ~[~[Q]]) ] = {
+      val _a: |-[ (P -> Q) -> (P -> ~[~[Q]]) ] = {
+        val _i: |-[ P -> (Q -> (~[~[Q]])) ] = SimpInf(NotNotRev)
+        DistInf(_i)
+      }
+      val _b: |-[ (P -> ~[~[Q]]) -> (~[~[P]] -> ~[~[Q]]) ] = {
+        val _i: |-[ ~[~[P]] -> P ] = NotNot
+        val _ii: |-[ (~[~[P]] -> (P -> ~[~[Q]])) -> ((~[~[P]] -> P) -> (~[~[P]] -> ~[~[Q]])) ] = Dist()
+        val _iii: |-[ (~[~[P]] -> (P -> ~[~[Q]])) -> (~[~[P]] -> ~[~[Q]]) ] = MPDedMaj(_i, _ii)
+        val _iv: |-[ (P -> ~[~[Q]]) -> (~[~[P]] -> (P -> ~[~[Q]])) ] = Simp()
+        MPDedMin(_iv, _iii)
+      }
+      MPDedMin(_a, _b)
+    }
+    val _2: |-[ (~[~[P]] -> ~[~[Q]]) -> (~[Q] -> ~[P]) ] = Trans()
+    MPDedMin(_1, _2)
   }
 
   def TransRevInf [P <: WFF, Q <: WFF]
