@@ -1,5 +1,8 @@
 package proofs.and.ladders
 
+import scala.annotation.showAsInfix
+
+@showAsInfix
 sealed trait |-[T] {
   def axioms: Set[Axiom]
   def proof: (Axiom, Seq[|-[_]])

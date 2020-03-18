@@ -3,11 +3,15 @@ package proofs.and.ladders
 package logic
 package propositional
 
+import scala.annotation.showAsInfix
+
 trait WFF
 
 object Axioms {
 
+  @showAsInfix
   trait ~   [L <: WFF] extends WFF
+  @showAsInfix
   trait ->  [L <: WFF, R <: WFF] extends WFF
 
   object Simp extends Axiom {
@@ -185,6 +189,7 @@ object Equivalence {
   import Implication._
   import Negation._
 
+  @showAsInfix
   trait <-> [L <: WFF, R <: WFF] extends WFF
   object DfBi extends Axiom {
     def apply[P <: WFF, Q <: WFF]()
@@ -231,7 +236,9 @@ object Junction {
   import Negation._
   import Equivalence._
 
+  @showAsInfix
   trait &   [L <: WFF, R <: WFF] extends WFF
+  @showAsInfix
   trait |   [L <: WFF, R <: WFF] extends WFF
 
   object DfOr extends Axiom {
