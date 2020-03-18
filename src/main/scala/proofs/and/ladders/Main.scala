@@ -2,7 +2,7 @@ package proofs.and.ladders
 
 import proofs.and.ladders.logic.propositional.Axioms.->
 import proofs.and.ladders.logic.propositional.Equivalence.<->
-import proofs.and.ladders.logic.propositional.{Equivalence, Implication, WFF}
+import proofs.and.ladders.logic.propositional.{Equivalence, Implication, Negation, WFF}
 
 object Main {
   def main(args: Array[String]): Unit = {
@@ -12,11 +12,10 @@ object Main {
     object Q extends WFF
     type Q = Q.type
 
-    def ProvenP: |-[P] = Axiom()
+    val concl = Negation.TransRev[P, Q]
 
-    val concl: |-[P <-> P] = Equivalence.BiIdentity
-
+    println(concl)
     println(concl.axioms)
-    println(concl.definitions)
+    println(concl.proofString)
   }
 }

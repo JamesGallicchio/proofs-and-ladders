@@ -1,24 +1,25 @@
 package proofs.and.ladders
 
 sealed trait |-[T] {
-  def axioms: Set[Axiom[_]]
-  def definitions: Set[Definition[_]]
+  def axioms: Set[Axiom]
+  def proof: (Axiom, Seq[|-[_]])
+  def proofString: String = {
+    val (a, hs) = proof
+    s"$a(${hs.map(_.proofString).mkString(",")})"
+  }
 }
 
-case class Axiom[T](name: String = (new Exception).getStackTrace()(1).getMethodName,
-                    private val parentAxioms: Set[Axiom[_]] = Set.empty,
-                    private val parentDefs: Set[Definition[_]] = Set.empty) extends |-[T] { self =>
-  override def axioms: Set[Axiom[_]] = parentAxioms + self
-  override def definitions: Set[Definition[_]] = parentDefs
-  override def toString: String = s"Axiom($name)"
+trait Axiom { self =>
+  def ax[T](hypotheses: Seq[|-[_]] = Seq.empty): |-[T] =
+    new |-[T] {
+      override def axioms: Set[Axiom] =
+        hypotheses.map(_.axioms).foldLeft(Set.empty[Axiom])(_ ++ _) + self
+      override def proof: (Axiom, Seq[|-[_]]) =
+        (self, hypotheses)
+    }
+  override def toString: String = self.getClass.getSimpleName
 }
 
-case class Definition[T](name: String = (new Exception).getStackTrace()(1).getMethodName) extends |-[T] { self =>
-  override def axioms: Set[Axiom[_]] = Set.empty
-  override def definitions: Set[Definition[_]] = Set(self)
-  override def toString: String = s"Def($name)"
-}
-
-object Placeholder {
-  def apply[T](): |-[T] = Axiom("placeholder")
+object Placeholder extends Axiom {
+  def apply[T](): |-[T] = ax()
 }

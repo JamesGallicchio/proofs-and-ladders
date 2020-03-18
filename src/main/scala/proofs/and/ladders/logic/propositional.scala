@@ -10,22 +10,30 @@ object Axioms {
   trait ~   [L <: WFF] extends WFF
   trait ->  [L <: WFF, R <: WFF] extends WFF
 
-  def Simp [P <: WFF, Q <: WFF]
-  : |-[ P -> (Q -> P) ]
-  = Axiom()
+  object Simp extends Axiom {
+    def apply [P <: WFF, Q <: WFF]()
+    : |-[ P -> (Q -> P) ]
+    = ax()
+  }
 
-  def Dist [P <: WFF, Q <: WFF, R <: WFF]
-  : |-[ (P -> (Q -> R)) -> ((P -> Q) -> (P -> R)) ]
-  = Axiom()
+  object Dist extends Axiom {
+    def apply[P <: WFF, Q <: WFF, R <: WFF]()
+    : |-[(P -> (Q -> R)) -> ((P -> Q) -> (P -> R))]
+    = ax()
+  }
 
-  def Trans [P <: WFF, Q <: WFF]
-  : |-[ (~[P] -> ~[Q]) -> (Q -> P) ]
-  = Axiom()
+  object Trans extends Axiom {
+    def apply[P <: WFF, Q <: WFF]()
+    : |-[(~[P] -> ~[Q]) -> (Q -> P)]
+    = ax()
+  }
 
-  def MP [P <: WFF, Q <: WFF]
-  (min: |-[P], maj: |-[P -> Q])
-  : |-[ Q ]
-  = Axiom(parentAxioms = min.axioms ++ maj.axioms)
+  object MP extends Axiom {
+    def apply[P <: WFF, Q <: WFF]
+    (min: |-[P], maj: |-[P -> Q])
+    : |-[Q]
+    = ax(Seq(min, maj))
+  }
 }
 
 object Implication {
@@ -34,12 +42,12 @@ object Implication {
   def SimpInf [P <: WFF, Q <: WFF]
   (_1: |-[P])
   : |-[Q -> P]
-  = MP(_1, Simp)
+  = MP(_1, Simp())
 
   def DistInf [P <: WFF, Q <: WFF, R <: WFF]
   (_1: |-[P -> (Q -> R)])
   : |-[ (P -> Q) -> (P -> R) ]
-  = MP(_1, Dist)
+  = MP(_1, Dist())
 
   def MPDouble [P <: WFF, Q <: WFF, R <: WFF]
   (_1: |-[P], _2: |-[Q], _3: |-[P -> (Q -> R)])
@@ -74,15 +82,15 @@ object Implication {
   (_1: |-[P -> Q])
   : |-[ P -> (R -> Q) ]
   = {
-    val _2: |-[Q -> (R -> Q)] = Simp
+    val _2: |-[Q -> (R -> Q)] = Simp()
     MPDedMin(_1, _2)
   }
 
   def Identity [P <: WFF]
   : |-[ P -> P ]
   = {
-    val _1: |-[P -> (P -> P)] = Simp
-    val _2: |-[P -> ((P -> P) -> P)] = Simp
+    val _1: |-[P -> (P -> P)] = Simp()
+    val _2: |-[P -> ((P -> P) -> P)] = Simp()
     MPDed(_1, _2)
   }
 
@@ -100,20 +108,20 @@ object Negation {
   def TransInf [P <: WFF, Q <: WFF]
   (_1: |-[ (~[P] -> ~[Q]) ])
   : |-[ Q -> P ]
-  = MP(_1, Trans)
+  = MP(_1, Trans())
 
   def TransDed [P <: WFF, Q <: WFF, R <: WFF]
   (_1: |-[ P -> (~[Q] -> ~[R]) ])
   : |-[ P -> (R -> Q) ]
   = {
-    val _2: |-[ (~[Q] -> ~[R]) -> (R -> Q) ] = Trans
+    val _2: |-[ (~[Q] -> ~[R]) -> (R -> Q) ] = Trans()
     MPDedMin(_1, _2)
   }
 
   def FalsePrem [P <: WFF, Q <: WFF]
   : |-[ ~[P] -> (P -> Q) ]
   = {
-    val _1: |-[ ~[P] -> (~[Q] -> ~[P]) ] = Simp
+    val _1: |-[ ~[P] -> (~[Q] -> ~[P]) ] = Simp()
     TransDed(_1)
   }
 
@@ -152,21 +160,21 @@ object Negation {
   def TransRevDed [P <: WFF, Q <: WFF, R <: WFF]
   (_1: |-[ P -> (Q -> R) ])
   : |-[ P -> (~[R] -> ~[Q]) ]
-  = ???
+  = Placeholder()
 
   def NotImplyPrem [P <: WFF, Q <: WFF]
   : |-[ ~[P -> Q] -> P ]
   = {
-    val _1: |-[ P -> (Q -> P) ] = Simp
+    val _1: |-[ P -> (Q -> P) ] = Simp()
     val _2: |-[ P -> (~[P] -> ~[Q]) ] = TransRevDed(_1)
     //val _2: |-[  -> P ] = NotNot
-    ???
+    Placeholder()
   }
 
   def NotImplyConc [P <: WFF, Q <: WFF]
   : |-[ ~[P -> Q] -> ~[Q] ]
   = {
-    val _1: |-[ Q -> (P -> Q) ] = Simp
+    val _1: |-[ Q -> (P -> Q) ] = Simp()
     TransRevInf(_1)
   }
 
@@ -178,20 +186,22 @@ object Equivalence {
   import Negation._
 
   trait <-> [L <: WFF, R <: WFF] extends WFF
-  def DfBi [P <: WFF, Q <: WFF]
-  : |-[ ~[ (P <-> Q) -> ~[(P -> Q) -> ~[Q -> P]]
-    ->  ~[ ~[(P -> Q) -> ~[Q -> P]] -> (P <-> Q) ]] ]
-  = Definition()
+  object DfBi extends Axiom {
+    def apply[P <: WFF, Q <: WFF]()
+    : |-[ ~[(P <-> Q) -> ~[(P -> Q) -> ~[Q -> P]]
+            -> ~[~[(P -> Q) -> ~[Q -> P]] -> (P <-> Q)]] ]
+    = ax()
+  }
 
   def BiImply [P <: WFF, Q <: WFF]
   : |-[(P <-> Q) -> (P -> Q)]
-  = ???
+  = Placeholder()
 
   def BiInf [P <: WFF, Q <: WFF]
   (_1: |-[P -> Q], _2: |-[Q -> P])
   : |-[ P <-> Q ]
   = {
-    val _3: |-[P -> (Q -> P)] = Simp
+    val _3: |-[P -> (Q -> P)] = Simp()
     Placeholder()
   }
 
@@ -204,12 +214,12 @@ object Equivalence {
 
   def BiComm [P <: WFF, Q <: WFF]
   : |-[ (P <-> Q) <-> (Q <-> P) ]
-  = ???
+  = Placeholder()
 
   def BiTransi [P <: WFF, Q <: WFF, R <: WFF]
   (_1: |-[P <-> Q], _2: |-[Q <-> R])
   : |-[ P <-> R ]
-  = ???
+  = Placeholder()
 }
 
 /**
@@ -224,15 +234,17 @@ object Junction {
   trait &   [L <: WFF, R <: WFF] extends WFF
   trait |   [L <: WFF, R <: WFF] extends WFF
 
-  def DfOr [P <: WFF, Q <: WFF]
-  : |-[ (P | Q) <-> (~[P] -> Q) ]
-  = Axiom()
+  object DfOr extends Axiom {
+    def apply[P <: WFF, Q <: WFF]()
+    : |-[(P | Q) <-> (~[P] -> Q)]
+    = ax()
+  }
 
   def OrComm [P <: WFF, Q <: WFF]
   : |-[ (P | Q) <-> (Q | P) ]
   = {
-    val _1: |-[ (P | Q) <-> (~[P] -> Q) ] = DfOr
-    ???
+    val _1: |-[ (P | Q) <-> (~[P] -> Q) ] = DfOr()
+    Placeholder()
   }
 }
 

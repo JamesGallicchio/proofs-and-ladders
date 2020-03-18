@@ -15,21 +15,27 @@ object Quantification {
   trait ForAll[X <: Setvar, P <: WFF] extends WFF
 
   trait Exists[X <: Setvar, P <: WFF] extends WFF
-  def DfExists[X <: Setvar, P <: WFF]
-  : |-[ Exists[X, P] <-> ~[ForAll[X, ~[P]]]]
-  = Axiom()
+  object DfExists extends Axiom {
+    def apply[X <: Setvar, P <: WFF]()
+    : |-[Exists[X, P] <-> ~[ForAll[X, ~[P]]]]
+    = ax()
+  }
 
   trait NotFree[X <: Setvar, P <: WFF] extends WFF
-  def DfNotFree[X <: Setvar, P <: WFF]
-  : |-[ NotFree[X, P] <-> ForAll[X, P -> ForAll[X, P]] ]
-  = Axiom()
+  object DfNotFree extends Axiom {
+    def apply[X <: Setvar, P <: WFF]()
+    : |-[NotFree[X, P] <-> ForAll[X, P -> ForAll[X, P]]]
+    = ax()
+  }
 }
 
 object Generalization {
-  def Generalization[P <: WFF, X <: Setvar]
-  (p: |-[P])
-  : |-[ ForAll[X, P] ]
-  = Axiom()
+  object Generalization extends Axiom {
+    def apply[P <: WFF, X <: Setvar]
+    (p: |-[P])
+    : |-[ ForAll[X, P] ]
+    = ax(Seq(p))
+  }
 
   def MPGen[X <: Setvar, P <: WFF, Q <: WFF]
   (maj: |-[ForAll[X, P] -> Q], min: |-[P])
@@ -50,10 +56,12 @@ object Distinctness {
 trait Class
 
 object Substitution {
-  def Classvar [X <: Setvar]
-  (x: |-[X])
-  : |-[Class]
-  = Axiom()
+  object Classvar extends Axiom {
+    def apply[X <: Setvar]
+    (x: |-[X])
+    : |-[Class]
+    = ax()
+  }
 
   /*trait `=`[A <: Class, B <: Class] extends WFF
   type `=`[A <: Setvar, B <: Setvar] = `=`[A, B]
